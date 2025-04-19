@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>THUNDERBIRD BBS</title>
+  <meta name="GENERATOR" content="THUNDERBIRD BBS (C) 1989">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      background-color: #FFF;
+      padding: 20px;
+    }
+    .bbs-terminal {
+      font-family: "Monaco", monospace;
+      white-space: pre-wrap;
+      line-height: 1.2;
+      animation: crt-flicker 0.1s infinite alternate;
+    }
+    @keyframes crt-flicker {
+      0% { opacity: 0.9; }
+      100% { opacity: 1; }
+    }
+    .message-area {
+    font-family: "Courier New", monospace;
+    white-space: pre;
+    line-height: 1.1;
+    font-size: 14px;
+    letter-spacing: 0;
+    overflow-x: hidden;
+  }
+    .ansi-bright { font-weight: bold; }
+    .ansi-black { color: #000000; }
+    .ansi-red { color: #FF0000; }
+    .ansi-green { color: #00FF00; }
+    .ansi-yellow { color: #FFFF00; }
+    .ansi-blue { color: #0000FF; }
+    .ansi-magenta { color: #FF00FF; }
+    .ansi-cyan { color: #00FFFF; }
+    .ansi-white { color: #FFFFFF; }
+    .blink { animation: blink 1s step-end infinite; }
+    @keyframes blink { 
+      50% { opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Modem Connection Sequence -->
+  <div id="modem-sequence" style="position:fixed;top:0;left:0;width:100%;height:100%;background:black;color:#00FF00;font-family:monospace;padding:20px;z-index:9999;">
+    <div id="modem-text"></div>
+  </div>
+
+  <!-- BBS Interface -->
+  <div id="bbs-interface" class="window" style="width: 600px; margin: 0 auto; display:none;">
+    <div class="title-bar">
+      <button aria-label="Close" class="close"></button>
+      <h1 class="title">THUNDERBIRD BBS</h1>
+      <button aria-label="Resize" class="resize"></button>
+    </div>
+    <div class="separator"></div>
+
+    <ul role="menu-bar">
+      <li role="menu-item" tabindex="0" aria-haspopup="true">
+        File
+        <ul role="menu">
+          <li role="menu-item"><a href="#login">Login</a></li>
+          <li role="menu-item"><a href="#register">Register</a></li>
+          <li role="menu-item" class="divider"></li>
+          <li role="menu-item"><a href="#exit">Exit</a></li>
+        </ul>
+      </li>
+      <li role="menu-item" tabindex="0" aria-haspopup="true">
+        Messages
+        <ul role="menu">
+          <li role="menu-item"><a href="#new">New Post</a></li>
+          <li role="menu-item"><a href="#inbox">Inbox</a></li>
+        </ul>
+      </li>
+    </ul>
+
+    <div class="window-pane bbs-terminal message-area" id="message-display">
+<pre>
+	
+   ■  ▐▌█  ▐▌▄▄▄▄     ▐▌▗▞▀▚▖ ▄▄▄ ▗▖   ▄  ▄▄▄ ▐▌
+▗▄▟▙▄▖▐▌▀▄▄▞▘█   █    ▐▌▐▛▀▀▘█    ▐▌   ▄ █    ▐▌
+  ▐▌  ▐▛▀▚▖  █   █ ▗▞▀▜▌▝▚▄▄▖█    ▐▛▀▚▖█ █ ▗▞▀▜▌
+  ▐▌  ▐▌ ▐▌        ▝▚▄▟▌          ▐▙▄▞▘█   ▝▚▄▟▌
+  ▐▌                                        
+           ┌───────────────────────┐
+           │ NO FEDS // NO COWARDS │
+           └───────────────────────┘
+    </pre></div>
+
+    <div class="separator"></div>
+    <div class="window-pane">
+      <div class="field-row" style="margin-top: 10px;">
+        <label for="bbs-command">COMMAND:</label>
+        <input id="bbs-command" type="text" style="flex-grow: 1;" placeholder="Type HELP">
+      </div>
+      <div class="field-row" style="justify-content: flex-end; margin-top: 10px;">
+        <button class="btn">CLEAR</button>
+        <button class="btn btn-default">SEND</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+// ======================
+// ANSI PROCESSOR (KEEP THIS)
+// ======================
+function processANSI(text) {
+  return text
+    .replace(/\x1B\[1m/g, '<span class="ansi-bright">')
+    .replace(/\x1B\[0m/g, '</span>')
+    .replace(/\x1B\[1;30m/g, '<span class="ansi-black">')
+    .replace(/\x1B\[1;31m/g, '<span class="ansi-red">')
+    .replace(/\x1B\[1;32m/g, '<span class="ansi-green">')
+    .replace(/\x1B\[1;33m/g, '<span class="ansi-yellow">')
+    .replace(/\x1B\[1;34m/g, '<span class="ansi-blue">')
+    .replace(/\x1B\[1;35m/g, '<span class="ansi-magenta">')
+    .replace(/\x1B\[1;36m/g, '<span class="ansi-cyan">')
+    .replace(/\x1B\[1;37m/g, '<span class="ansi-white">');
+}
+
+// ======================
+// FIXED RAINBOW BANNER
+// ======================
+function createRainbowBanner() {
+  // Use backticks (`) to preserve exact whitespace
+  const asciiArt = 
+`   ■  ▐▌█  ▐▌▄▄▄▄     ▐▌▗▞▀▚▖ ▄▄▄ ▗▖   ▄  ▄▄▄ ▐▌
+  ▗▄▟▙▄▖▐▌▀▄▄▞▘█   █    ▐▌▐▛▀▀▘█    ▐▌   ▄ █    ▐▌
+    ▐▌  ▐▛▀▚▖  █   █ ▗▞▀▜▌▝▚▄▄▖█    ▐▛▀▚▖█ █ ▗▞▀▜▌
+    ▐▌  ▐▌ ▐▌        ▝▚▄▟▌          ▐▙▄▞▘█   ▝▚▄▟▌
+    ▐▌                                          `;
+
+  const colors = ['\x1B[1;31m', '\x1B[1;33m', '\x1B[1;32m', 
+                 '\x1B[1;36m', '\x1B[1;34m', '\x1B[1;35m'];
+  let colorIndex = 0;
+
+  // Process each line separately
+  let rainbowArt = '';
+  const lines = asciiArt.split('\n');
+  
+  for (let line of lines) {
+    // Skip empty lines
+    if (!line.trim()) continue;
+    
+    // Center each line
+    const padAmount = Math.floor((60 - line.length) / 2); // 60 = max width
+    line = ' '.repeat(padAmount) + line;
+    
+    // Apply rainbow colors
+    let coloredLine = '';
+    for (const char of line) {
+      if (char === ' ') {
+        coloredLine += ' ';
+      } else {
+        coloredLine += colors[colorIndex % colors.length] + char + '\x1B[0m';
+        colorIndex++;
+      }
+    }
+    rainbowArt += coloredLine + '<br>';
+  }
+
+  // Add centered welcome box
+  rainbowArt += `
+  <div style="text-align:center;margin-top:10px">
+    ┌───────────────────────┐<br>
+    │   WELCOME TO THE BBS  │<br>
+    └───────────────────────┘
+  </div>`;
+
+  return rainbowArt;
+}
+
+
+// ======================
+// MODEM SEQUENCE (FULLY WORKING VERSION)
+// ======================
+function startModemSequence() {
+  const modemText = document.getElementById('modem-text');
+  const modemSequence = [
+    "ATZ",
+    "OK",
+    "ATDT555-1234",
+    "CONNECT 2400",
+    "NEGOTIATING PROTOCOL...",
+    "HANDSHAKE COMPLETE",
+    "LOGGING INTO SYSTEM...",
+    '\x1B[1;32mCONNECTION ESTABLISHED\x1B[0m'
+  ];
+
+  let step = 0;
+  function nextStep() {
+    if (step < modemSequence.length) {
+      modemText.innerHTML += processANSI(modemSequence[step]) + "<br>";
+      step++;
+      setTimeout(nextStep, 800);
+    } else {
+      document.getElementById('modem-sequence').style.display = 'none';
+      document.getElementById('bbs-interface').style.display = 'block';
+      document.getElementById('message-display').innerHTML = 
+        processANSI(createRainbowBanner());
+    }
+  }
+  nextStep();
+}
+
+// ======================
+// START EVERYTHING WHEN PAGE LOADS
+// ======================
+window.onload = function() {
+  setTimeout(startModemSequence, 500);
+};
+
+// ======================
+// BBS COMMAND HANDLER (KEEP YOUR EXISTING ONE)
+// ======================
+document.getElementById('bbs-command').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') {
+    const command = this.value.toUpperCase();
+    const terminal = document.querySelector('.message-area');
+    
+    if (command === 'HELP') {
+      terminal.innerHTML += '\n\nCOMMANDS: HELP, LOGIN, LIST, QUIT';
+    } else if (command === 'LOGIN') {
+      terminal.innerHTML += '\n\nLOGIN FEATURE COMING SOON';
+    } else {
+      terminal.innerHTML += '\n\nUNKNOWN COMMAND';
+    }
+    
+    this.value = '';
+    terminal.scrollTop = terminal.scrollHeight;
+  }
+});
+
+// Clear button functionality
+document.querySelector('.btn:not(.btn-default)').addEventListener('click', function() {
+  document.getElementById('message-display').innerHTML = 
+    processANSI(createRainbowBanner());
+});
+</script>
+</body>
+</html>
