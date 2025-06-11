@@ -1,0 +1,18 @@
+# Build output
+dist/
+
+# Dependencies
+node_modules/
+
+# Data files
+*.sqlite
+*.sqlite3
+bbs_users.json
+bbs_messages.json
+
+# Log files
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
