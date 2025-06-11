@@ -17,6 +17,18 @@ const { startTelnetServer } = require("./telnetServer");
 const express = require('express');
 const cors = require('cors'); // Added CORS
 const { createSession, processInput, getSession } = require('./bbsLogic');
+const { initDb } = require('./database'); // Import initDb
+
+// Initialize Database first
+initDb((err) => {
+  if (err) {
+    console.error("Failed to initialize database. Exiting.", err);
+    process.exit(1); // Exit if DB init fails
+  } else {
+    // Start servers only if DB is ready
+    startServers();
+  }
+});
 
 const app = express();
 const EXPRESS_PORT = 3001; // Using a different port for Express API
@@ -35,10 +47,12 @@ app.post('/api/command', (req, res) => {
   res.json({ response: bbsResponse, sessionId: sessionId });
 });
 
-app.listen(EXPRESS_PORT, () => {
-  console.log(`Express server listening on port ${EXPRESS_PORT}`);
-});
+function startServers() {
+  app.listen(EXPRESS_PORT, () => {
+    console.log(`Express server listening on port ${EXPRESS_PORT}`);
+  });
 
-// Keep live-server for static files and auto-reloading
-liveServer.start({ port: 3000, root: "./", file: "index.html" });
-startTelnetServer();
+  // Keep live-server for static files and auto-reloading
+  liveServer.start({ port: 3000, root: "./", file: "index.html" });
+  startTelnetServer();
+}
