@@ -43,6 +43,10 @@
     "postcss-inline-svg": "^4.1.0"
   },
   "dependencies": {
-    "draggabilly": "^3.0.0"
+    "draggabilly": "^3.0.0",
+    "express": "^4.17.1",
+    "cors": "^2.8.5",
+    "sqlite3": "^5.1.7",
+    "bcrypt": "^5.1.1"
   }
 }

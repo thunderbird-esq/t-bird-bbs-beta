@@ -215,30 +215,68 @@ window.onload = function() {
 };
 
 // ======================
-// BBS COMMAND HANDLER (KEEP YOUR EXISTING ONE)
+// BBS COMMAND HANDLER
 // ======================
-document.getElementById('bbs-command').addEventListener('keypress', function(e) {
-  if (e.key === 'Enter') {
-    const command = this.value.toUpperCase();
-    const terminal = document.querySelector('.message-area');
-    
-    if (command === 'HELP') {
-      terminal.innerHTML += '\n\nCOMMANDS: HELP, LOGIN, LIST, QUIT';
-    } else if (command === 'LOGIN') {
-      terminal.innerHTML += '\n\nLOGIN FEATURE COMING SOON';
-    } else {
-      terminal.innerHTML += '\n\nUNKNOWN COMMAND';
+let currentSessionId = null;
+const commandInput = document.getElementById('bbs-command');
+const messageDisplay = document.getElementById('message-display'); // Changed from querySelector to getElementById for consistency
+const sendButton = document.querySelector('.btn.btn-default');
+const clearButton = document.querySelector('.btn:not(.btn-default)');
+
+async function sendCommandToServer(commandValue) {
+  if (!commandValue.trim()) return;
+
+  // Display command in terminal
+  messageDisplay.innerHTML += `\n&gt; ${commandValue}\n`;
+
+  try {
+    const response = await fetch('/api/command', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ command: commandValue, sessionId: currentSessionId }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      messageDisplay.innerHTML += `Error: ${response.status} ${errorText}\n`;
+      messageDisplay.scrollTop = messageDisplay.scrollHeight;
+      return;
     }
+
+    const data = await response.json();
+    currentSessionId = data.sessionId;
+    // Ensure data.response is treated as pre-formatted text
+    // To prevent HTML injection and preserve formatting like newlines
+    const responseTextNode = document.createTextNode(data.response);
+    messageDisplay.appendChild(responseTextNode);
     
-    this.value = '';
-    terminal.scrollTop = terminal.scrollHeight;
+  } catch (error) {
+    console.error('Fetch error:', error);
+    messageDisplay.innerHTML += `\nError connecting to server: ${error.message}\n`;
+  } finally {
+    commandInput.value = '';
+    messageDisplay.scrollTop = messageDisplay.scrollHeight;
+  }
+}
+
+commandInput.addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault(); // Prevent default form submission if it's part of a form
+    sendCommandToServer(this.value);
   }
 });
 
+sendButton.addEventListener('click', function() {
+  sendCommandToServer(commandInput.value);
+});
+
 // Clear button functionality
-document.querySelector('.btn:not(.btn-default)').addEventListener('click', function() {
-  document.getElementById('message-display').innerHTML = 
-    processANSI(createRainbowBanner());
+clearButton.addEventListener('click', function() {
+  messageDisplay.innerHTML = processANSI(createRainbowBanner());
+  // Optionally, you might want to clear the session or inform the server
+  // For now, just clears the display
 });
 </script>
 </body>
