@@ -159,11 +159,11 @@ function build() {
       // buildSystemCssDocsPage might need to be adjusted if it expects CSS in a specific place
       // or if its links need to be relative to /dist.
       // For now, assume it works with dist/system.css created by the original buildCSS.
-      return buildSystemCssDocsPage();
+      // return buildSystemCssDocsPage(); // This line is now commented out/removed.
     })
     .then(() => {
-      console.log("System CSS docs page built.");
-      console.log("Build completed successfully.");
+      // console.log("System CSS docs page built."); // Corresponding log also commented out.
+      console.log("Build completed successfully (BBS client assets only).");
     })
     .catch((err) => console.error("Build failed:", err));
 }
