@@ -272,6 +272,7 @@ async function processInput(sessionId, inputString) {
         });
         responseString = "Registration successful. You can now LOGIN.\n";
       } catch (dbErr) {
+        // This catch block handles errors from the Promises (e.g., db.get/run rejections).
         console.error("Database error in command: REGISTER", dbErr);
         responseString = "Registration failed. A database error occurred.\n";
       }
@@ -379,7 +380,7 @@ async function processInput(sessionId, inputString) {
       const lookBoardId = session.currentBoardId || 1;
       const lookBoardName = session.currentBoardName || 'General';
       try {
-        const messages = await new Promise((resolve, reject) => {
+        const messages = await new Promise((resolve, reject) => { // Renamed 'rows' to 'messages'
           const query = `
             SELECT m.body, m.timestamp, u.username
             FROM messages m
@@ -493,13 +494,17 @@ async function processInput(sessionId, inputString) {
         // Map elementType to the correct session.prefs key and DB column name
         let prefKey = `color_${elementTypeArg}`; // e.g. color_prompt
         let dbColumnName = `color_${elementTypeArg}`;
-        if (elementTypeArg === 'username') prefKey = 'username_output'; // session.prefs.username_output
-        if (elementTypeArg === 'timestamp') prefKey = 'timestamp_output'; // session.prefs.timestamp_output
-        // DB column names are color_prompt, color_username_output, color_timestamp_output
+        if (elementTypeArg === 'username') { // Map 'username' from CUSTOMIZABLE_ELEMENTS to 'username_output' for prefs/DB
+            prefKey = 'username_output';
+            dbColumnName = 'color_username_output';
+        } else if (elementTypeArg === 'timestamp') { // Map 'timestamp' to 'timestamp_output'
+            prefKey = 'timestamp_output';
+            dbColumnName = 'color_timestamp_output';
+        }
+        // For 'prompt', prefKey and dbColumnName are already correct (color_prompt)
 
         try {
             await new Promise((resolve, reject) => {
-                // Use INSERT OR REPLACE (UPSERT)
                 const sql = `
                     INSERT INTO user_preferences (user_id, ${dbColumnName})
                     VALUES (?, ?)
@@ -510,7 +515,7 @@ async function processInput(sessionId, inputString) {
                     else resolve(this);
                 });
             });
-            session.prefs[prefKey] = colorNameArg; // Update live session preference
+            session.prefs[prefKey] = colorNameArg;
             responseString = `Color for ${elementTypeArg} set to ${colorNameArg}.\n`;
         } catch (dbErr) {
             console.error("Database error in command: SETCOLOR", dbErr);
@@ -527,7 +532,6 @@ async function processInput(sessionId, inputString) {
               helpSetcolorLines.push(`  ${k} - ${v}`);
           });
           helpSetcolorLines.push("\nAvailable colors:");
-          // Group colors for better readability if many, for now just join
           helpSetcolorLines.push("  " + AVAILABLE_COLORS.join(', '));
           responseString = helpSetcolorLines.join('\n') + '\n';
           break;
@@ -593,7 +597,8 @@ module.exports = {
   endSession,
   processInput,
   parseCommand,
-  initializeGeneralBoardCache // Export for server.js startup
+  initializeGeneralBoardCache, // Export for server.js startup
+  getAppliedColor, // Export for telnetServer.js
+  COLOR_MAP, // Export for telnetServer.js (for reset mostly)
+  DEFAULT_COLORS // Export for telnetServer.js (for default prompt color if needed)
 };
-
-[end of bbsLogic.js]
