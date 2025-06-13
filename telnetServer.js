@@ -8,37 +8,24 @@ const { createSession, processInput, endSession, getSession, getAppliedColor, CO
 
 const TELNET_PORT = process.env.TELNET_PORT || 2323;
 
-// ANSI Color Constants are now primarily managed in bbsLogic.js
-// However, ANSI_RESET is universal and useful here.
-const ANSI_RESET_TELNET = "\x1b[0m"; // Renamed to avoid conflict if bbsLogic.ANSI_RESET is different
-
 /**
  * Generates the ANSI art welcome banner for Telnet clients.
- * Uses color codes directly for simplicity as this banner is static.
+ * Uses color codes from the imported COLOR_MAP for consistency.
  * @returns {string} The formatted welcome banner string with ANSI escape codes.
  */
 function getAnsiWelcomeBanner() {
-  // Direct use of ANSI codes for the static banner
-  const BRIGHT_CYAN = "\x1b[1;36m";
-  const CYAN = "\x1b[36m";
-  const BLUE = "\x1b[34m";
-  const MAGENTA = "\x1b[35m";
-  const YELLOW = "\x1b[33m";
-  const BRIGHT = "\x1b[1m";
-  const GREEN = "\x1b[32m";
-
   const bannerLines = [
-    `   ${BRIGHT_CYAN}■  ▐▌█  ▐▌▄▄▄▄     ▐▌▗▞▀▚▖ ▄▄▄ ▗▖   ▄  ▄▄▄ ▐▌${ANSI_RESET_TELNET}`,
-    `  ${CYAN}▗▄▟▙▄▖▐▌▀▄▄▞▘█   █    ▐▌▐▛▀▀▘█    ▐▌   ▄ █    ▐▌${ANSI_RESET_TELNET}`,
-    `    ${BLUE}▐▌  ▐▛▀▚▖  █   █ ▗▞▀▜▌▝▚▄▄▖█    ▐▛▀▚▖█ █ ▗▞▀▜▌${ANSI_RESET_TELNET}`,
-    `    ${BLUE}▐▌  ▐▌ ▐▌        ▝▚▄▟▌          ▐▙▄▞▘█   ▝▚▄▟▌${ANSI_RESET_TELNET}`,
-    `    ${MAGENTA}▐▌                                          ${ANSI_RESET_TELNET}`,
+    `   ${COLOR_MAP.bright_cyan}■  ▐▌█  ▐▌▄▄▄▄     ▐▌▗▞▀▚▖ ▄▄▄ ▗▖   ▄  ▄▄▄ ▐▌${COLOR_MAP.reset}`,
+    `  ${COLOR_MAP.cyan}▗▄▟▙▄▖▐▌▀▄▄▞▘█   █    ▐▌▐▛▀▀▘█    ▐▌   ▄ █    ▐▌${COLOR_MAP.reset}`,
+    `    ${COLOR_MAP.blue}▐▌  ▐▛▀▚▖  █   █ ▗▞▀▜▌▝▚▄▄▖█    ▐▛▀▚▖█ █ ▗▞▀▜▌${COLOR_MAP.reset}`,
+    `    ${COLOR_MAP.blue}▐▌  ▐▌ ▐▌        ▝▚▄▟▌          ▐▙▄▞▘█   ▝▚▄▟▌${COLOR_MAP.reset}`,
+    `    ${COLOR_MAP.magenta}▐▌                                          ${COLOR_MAP.reset}`,
     ``,
-    `${YELLOW}           ┌───────────────────────┐${ANSI_RESET_TELNET}`,
-    `${YELLOW}           │ ${BRIGHT}NO FEDS // NO COWARDS${ANSI_RESET_TELNET}${YELLOW} │${ANSI_RESET_TELNET}`,
-    `${YELLOW}           └───────────────────────┘${ANSI_RESET_TELNET}`,
+    `${COLOR_MAP.yellow}           ┌───────────────────────┐${COLOR_MAP.reset}`,
+    `${COLOR_MAP.yellow}           │ ${COLOR_MAP.bright_white}NO FEDS // NO COWARDS${COLOR_MAP.reset}${COLOR_MAP.yellow} │${COLOR_MAP.reset}`, // Changed NO FEDS to bright_white for emphasis
+    `${COLOR_MAP.yellow}           └───────────────────────┘${COLOR_MAP.reset}`,
     ``,
-    `${GREEN}       Welcome to THUNDERBIRD BBS (Telnet)!${ANSI_RESET_TELNET}`
+    `${COLOR_MAP.green}       Welcome to THUNDERBIRD BBS (Telnet)!${COLOR_MAP.reset}`
   ];
   return bannerLines.join('\r\n') + '\r\n\r\n';
 }
@@ -49,9 +36,8 @@ function getAnsiWelcomeBanner() {
  * @param {object} session - The user's session object.
  */
 function writePrompt(socket, session) {
-    // getAppliedColor and COLOR_MAP are from bbsLogic.
     const promptColorCode = getAppliedColor(session, 'prompt');
-    socket.write(`\r\n${promptColorCode}> ${COLOR_MAP.reset || ANSI_RESET_TELNET}`);
+    socket.write(`\r\n${promptColorCode}> ${COLOR_MAP.reset}`); // Use imported COLOR_MAP.reset
 }
 
 
@@ -61,16 +47,16 @@ function writePrompt(socket, session) {
 function startTelnetServer() {
   const server = net.createServer(async (socket) => {
     let sessionId;
-    let session; // To store the session object for use in prompt writing
+    let session;
     try {
       sessionId = await createSession('telnet');
       socket.sessionId = sessionId;
-      session = getSession(sessionId); // Get the session object
+      session = getSession(sessionId);
       if (!session) throw new Error("Session could not be retrieved after creation.");
 
       console.log(`Telnet client connected, session created: ${sessionId}`);
       socket.write(getAnsiWelcomeBanner());
-      writePrompt(socket, session); // Write initial prompt with color
+      writePrompt(socket, session);
     } catch (e) {
         console.error("Telnet: Error during session creation or initial write:", e);
         socket.write("Server error during connection setup. Please try again.\r\n");
@@ -81,7 +67,7 @@ function startTelnetServer() {
     socket.on('data', async (data) => {
       const commandString = data.toString().trim();
       const currentSessionId = socket.sessionId;
-      const currentSession = getSession(currentSessionId); // Get current session for prompt re-coloring
+      const currentSession = getSession(currentSessionId);
 
       if (!currentSession) {
         console.error(`Telnet Error: No valid session found for active socket (ID: ${currentSessionId}). Ending connection.`);
@@ -91,7 +77,7 @@ function startTelnetServer() {
       }
 
       if (!commandString) {
-        writePrompt(socket, currentSession); // Re-issue prompt on empty input
+        writePrompt(socket, currentSession);
         return;
       }
 
@@ -104,11 +90,11 @@ function startTelnetServer() {
       try {
         const response = await processInput(currentSessionId, commandString);
         socket.write(response.endsWith('\n') ? response : response + '\r\n');
-        writePrompt(socket, currentSession); // Re-issue prompt after command response
+        writePrompt(socket, currentSession);
       } catch (e) {
         console.error(`Error processing command for session ${currentSessionId}:`, e);
         socket.write("An internal error occurred while processing your command. Please try again.\r\n");
-        writePrompt(socket, currentSession); // Re-issue prompt even after error
+        writePrompt(socket, currentSession);
       }
     });
 
