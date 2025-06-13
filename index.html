@@ -230,7 +230,9 @@ async function sendCommandToServer(commandValue) {
   messageDisplay.innerHTML += `\n&gt; ${commandValue}\n`;
 
   try {
-    const response = await fetch('/api/command', {
+    // Ensure this URL matches the Express API server's host and port
+    const apiUrl = 'http://localhost:3001/api/command';
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
