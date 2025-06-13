@@ -1,0 +1,771 @@
+/* Font Definitions */
+@font-face {
+  font-family: Chicago;
+  src: url("fonts/ChicagoFLF.woff") format("woff"),
+       url("fonts/ChicagoFLF.woff2") format("woff2");
+}
+@font-face {
+  font-family: Chicago_12;
+  src: url("fonts/ChiKareGo2.woff") format("woff"),
+       url("fonts/ChiKareGo2.woff2") format("woff2");
+}
+@font-face {
+  font-family: Geneva_9;
+  src: url("fonts/FindersKeepers.woff") format("woff"),
+       url("fonts/FindersKeepers.woff2") format("woff2");
+}
+@font-face {
+  font-family: Monaco;
+  src: url("fonts/monaco.woff") format("woff"),
+       url("fonts/monaco.woff2") format("woff2");
+}
+
+/* CSS Variables */
+:root {
+  --box-shadow: 2px 2px;
+  --element-spacing: 8px;
+  --grouped-element-spacing: 6px;
+  --radio-width: 12px;
+  --checkbox-width: 13px;
+  --radio-label-spacing: 6px;
+  --radio-total-width-precalc: calc(var(--radio-width) + var(--radio-label-spacing));
+  --radio-total-width: calc(var(--radio-total-width-precalc));
+  --radio-left: calc(-1 * var(--radio-total-width-precalc));
+  --radio-dot-width: 6px;
+  --radio-dot-top: calc(var(--radio-width) / 2 - var(--radio-dot-width) / 2);
+  --radio-dot-left: calc(-1 * var(--radio-total-width-precalc) + var(--radio-width) / 2 - var(--radio-dot-width) / 2);
+  --checkbox-total-width-precalc: calc(var(--checkbox-width) + var(--radio-label-spacing));
+  --checkbox-total-width: calc(var(--checkbox-total-width-precalc));
+  --checkbox-left: calc(-1 * var(--checkbox-total-width-precalc));
+  --checkmark-width: 12px;
+  --checkmark-top: 2px;
+  --checkmark-left: 2px;
+  --sys-color-white: #FFFFFF;
+  --sys-color-black: #000000;
+  --sys-color-grey: #A5A5A5;
+  --sys-color-darkgrey: #B6B7B8;
+  --primary: var(--sys-color-white);
+  --secondary: var(--sys-color-black);
+  --tertiary: var(--sys-color-grey);
+  --disabled: var(--sys-color-darkgrey);
+}
+
+/* Body */
+body {
+  background: var(--sys-color-black);
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Inconsolata", Menlo, Chicago, Geneva;
+  font-size: 18px;
+  letter-spacing: -0.025em;
+  overflow: hidden;
+}
+
+/* Boot Screen */
+.boot-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  background: linear-gradient(90deg, var(--primary) 21px, transparent 1%) center,
+              linear-gradient(var(--primary) 21px, transparent 1%) center,
+              var(--secondary);
+  background-size: 22px 22px;
+  background-attachment: fixed;
+  z-index: 2000;
+}
+.boot-icon {
+  width: 64px;
+  height: 64px;
+  cursor: pointer;
+  filter: drop-shadow(0 0 8px rgba(147, 112, 219, 0.5));
+  transition: filter 0.3s ease;
+}
+.boot-icon:hover {
+  filter: drop-shadow(0 0 12px rgba(147, 112, 219, 0.8));
+}
+.boot-icon-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, calc(-50% + 15px));
+  margin-top: 0;
+  font-family: Chicago_12;
+  font-size: 12px;
+  color: var(--secondary);
+  text-align: center;
+}
+.boot-icon-label .question-mark {
+  display: inline-block;
+  font-size: 24px;
+  animation: blink 1s infinite;
+}
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* Desktop (Hidden Initially) */
+.desktop-container {
+  display: none;
+  background: linear-gradient(90deg, var(--primary) 21px, transparent 1%) center,
+              linear-gradient(var(--primary) 21px, transparent 1%) center,
+              var(--secondary);
+  background-size: 22px 22px;
+  background-attachment: fixed;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+.desktop-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, rgba(147, 112, 219, 0.1), rgba(0, 191, 255, 0.1), rgba(147, 112, 219, 0.1));
+  background-size: 200% 200%;
+  animation: gradientShift 15s ease infinite;
+  z-index: 0;
+  pointer-events: none;
+}
+.desktop-container > * {
+  position: relative;
+  z-index: 1;
+}
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Desktop Menu Bar */
+.desktop-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: var(--primary);
+  border-bottom: 0.1rem solid var(--secondary);
+  z-index: 1000;
+}
+.desktop-menu .menu-icon {
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+  margin-right: 5px;
+}
+
+/* Desktop Icons */
+.desktop {
+  position: fixed;
+  top: 2rem;
+  left: 1rem;
+  right: 1rem;
+  bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  z-index: 1;
+}
+.desktop-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 64px;
+  margin: 1rem;
+  cursor: pointer;
+  font-family: Chicago_12;
+  font-size: 12px;
+  color: var(--secondary);
+  text-align: center;
+}
+.desktop-icon img {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 4px;
+  border: 1px solid var(--secondary);
+  background: var(--primary);
+}
+.desktop-icon:hover {
+  background: var(--secondary);
+  color: var(--primary);
+}
+
+/* Boot Dialog */
+.boot-dialog {
+  position: absolute;
+  width: 600px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--primary);
+  z-index: 2001;
+  display: none;
+  border: 0.1em solid var(--secondary);
+  box-shadow: var(--box-shadow);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.boot-dialog .title-bar {
+  display: flex;
+  align-items: center;
+  height: 1.5rem;
+  margin: 0.1rem 0;
+  padding: 0.2rem 0.1rem;
+  background: linear-gradient(var(--secondary) 50%, transparent 50%);
+  background-size: 6.6666666667% 13.3333333333%;
+  background-clip: content-box;
+  border-bottom: 0.1rem solid var(--secondary);
+  position: relative;
+}
+.boot-dialog .title-bar .title {
+  padding: 0 0.5em;
+  margin: 0 auto;
+  font-size: 1.5rem;
+  font-weight: bold;
+  line-height: 1.1;
+  text-align: center;
+  background: var(--primary);
+  cursor: default;
+  font-family: Chicago_12;
+}
+.boot-text {
+  white-space: pre-wrap;
+  line-height: 1.2em;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+  display: none;
+  text-align: left;
+  color: var(--tertiary);
+  font-family: Monaco, monospace;
+  font-size: 22px;
+  max-height: 300px;
+  overflow: auto;
+  padding: 1rem 2rem;
+}
+.boot-text .ok { color: #0f0; }
+.boot-text .fail { color: #f00; }
+.progress-section {
+  text-align: left;
+  color: var(--tertiary);
+  font-family: Monaco, monospace;
+  font-size: 14px;
+  margin-top: 2px;
+  padding: 0 2rem 1rem 2rem;
+}
+#progressHeader, #status {
+  color: #0FF;
+  font-family: Monaco, monospace;
+  font-size: 24px;
+  font-weight: bold;
+}
+#progressBar {
+  color: #FFC107;
+  font-family: Monaco, monospace;
+  font-size: 22px;
+}
+
+/* General Scrollbar (for elements other than boot-text, window-pane, and message-area) */
+::-webkit-scrollbar {
+  width: 22px;
+  background-color: var(--primary);
+}
+::-webkit-scrollbar-track {
+  background: linear-gradient(45deg, var(--secondary) 25%, transparent 25%, transparent 75%, var(--secondary) 75%),
+              linear-gradient(45deg, var(--secondary) 25%, transparent 25%, transparent 75%, var(--secondary) 75%);
+  background-color: var(--primary);
+  background-size: 4px 4px;
+  background-position: 0 0, 2px 2px;
+  width: 10px;
+  border-left: 3px solid var(--secondary);
+}
+::-webkit-scrollbar-thumb {
+  width: 20px;
+  box-sizing: content-box;
+  background-color: var(--primary);
+  border: 2px solid var(--secondary);
+  border-right: none;
+}
+/* Shared Scrollbar Styles for boot-text, window-pane, and message-area */
+.boot-text::-webkit-scrollbar,
+.window-pane::-webkit-scrollbar,
+.message-area::-webkit-scrollbar {
+  width: 22px;
+  background-color: var(--primary);
+}
+.boot-text::-webkit-scrollbar-track,
+.window-pane::-webkit-scrollbar-track,
+.message-area::-webkit-scrollbar-track {
+  background: linear-gradient(45deg, var(--secondary) 25%, transparent 25%, transparent 75%, var(--secondary) 75%),
+              linear-gradient(45deg, var(--secondary) 25%, transparent 25%, transparent 75%, var(--secondary) 75%);
+  background-color: var(--primary);
+  background-size: 4px 4px;
+  background-position: 0 0, 2px 2px;
+  width: 10px;
+  border-left: 3px solid var(--secondary);
+}
+.window-pane::-webkit-scrollbar-track {
+  border-left: 4px solid var(--secondary);
+}
+.boot-text::-webkit-scrollbar-thumb,
+.window-pane::-webkit-scrollbar-thumb,
+.message-area::-webkit-scrollbar-thumb {
+  width: 20px;
+  box-sizing: content-box;
+  background-color: var(--primary);
+  border: 2px solid var(--secondary);
+  border-right: none;
+}
+
+/* Window */
+.window {
+  flex-direction: column;
+  position: absolute;
+  min-width: 320px;
+  min-height: 200px;
+  background-color: var(--primary);
+  border: 0.1em solid var(--secondary);
+  font-family: "Inconsolata", Menlo, Chicago, Geneva;
+  box-shadow: var(--box-shadow), 0 0 10px rgba(147, 112, 219, 0.3);
+  z-index: 100;
+  display: none;
+  resize: both;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.window-pane {
+  box-sizing: border-box;
+  padding: 8px;          /* ← margin so content never hugs the chrome */
+  width: 100%;
+  height: calc(100% - 22px);
+  overflow: auto;        /* native scrollbars live here */
+  background: var(--primary);
+}
+.window.draggable {
+  cursor: move;
+}
+/*────────────────  System-6 scrollbars for .window-pane  ───────────────*/
+
+/* 1 ▸ base colours for Firefox + Chromium “overlay” scrollbars */
+.window-pane {
+  /* (these two lines also apply to Firefox) */
+  scrollbar-width: thin;                                     /* firefox */
+  scrollbar-color: var(--secondary) var(--primary);          /* firefox */
+}
+
+/* 2 ▸ WebKit scrollbar track (vertical + horizontal) */
+.window-pane::-webkit-scrollbar {
+  width: 14px;                /* v-bar */
+  height: 14px;               /* h-bar */
+  background: var(--primary); /* light track */
+}
+
+/* 3 ▸ draggable thumb */
+.window-pane::-webkit-scrollbar-thumb {
+  background: var(--secondary);            /* mid-grey thumb */
+  border: 2px solid var(--primary);        /* inset border for 3-D effect */
+  border-radius: 1px;
+}
+/* 4 ▸ arrow buttons (absolute paths + correct pseudo-states) */
+.window-pane::-webkit-scrollbar-button:vertical:decrement {
+  background: url("/core/icon/scrollbar-up.svg") center no-repeat;
+  height: 14px;
+  display: block;            /* force button to render */
+}
+.window-pane::-webkit-scrollbar-button:vertical:increment {
+  background: url("/core/icon/scrollbar-down.svg") center no-repeat;
+  height: 14px;
+  display: block;
+}
+.window-pane::-webkit-scrollbar-button:horizontal:decrement {
+  background: url("/core/icon/scrollbar-left.svg") center no-repeat;
+  width: 14px;
+  display: block;
+}
+.window-pane::-webkit-scrollbar-button:horizontal:increment {
+  background: url("/core/icon/scrollbar-right.svg") center no-repeat;
+  width: 14px;
+  display: block;
+}
+
+/* optional: keep blanks hidden in browsers that add extra buttons */
+.window-pane::-webkit-scrollbar-button:vertical:single-button,
+.window-pane::-webkit-scrollbar-button:horizontal:single-button {
+  display: none;
+}
+
+/* Modem Dialog */
+.modal-dialog {
+  position: absolute;
+  width: 400px;
+  background: var(--primary);
+  z-index: 200;
+  display: none;
+  border: 0.1em solid var(--secondary);
+  box-shadow: var(--box-shadow), 0 0 10px rgba(147, 112, 219, 0.3);
+  resize: both;
+}
+.modal-dialog .title-bar {
+  border-bottom: 0.1rem solid var(--secondary);
+}
+
+/* Title Bar */
+.title-bar {
+  display: flex;
+  align-items: center;
+  height: 1.5rem;
+  margin: 0.1rem 0;
+  padding: 0.2rem 0.1rem;
+  background: linear-gradient(var(--secondary) 50%, transparent 50%);
+  background-size: 6.6666666667% 13.3333333333%;
+  background-clip: content-box;
+  border-bottom: 0.1rem solid var(--secondary);
+  position: relative;
+}
+.title-bar .title {
+  padding: 0 0.5em;
+  margin: 0 auto;
+  font-size: 1.5rem;
+  font-weight: bold;
+  line-height: 1.1;
+  text-align: center;
+  background: var(--primary);
+  cursor: default;
+  font-family: Chicago_12;
+}
+.title-bar button {
+  position: relative;
+  display: block;
+  width: 16px;
+  height: 16px;
+  margin: 0 0.3rem;
+  border: 1px solid var(--secondary);
+  background-color: var(--primary);
+  cursor: pointer;
+  z-index: 2;
+}
+.title-bar button.close::before, .title-bar button.close::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 2px;
+  background: var(--secondary);
+  transform-origin: center;
+}
+.title-bar button.close::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+.title-bar button.close::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+.title-bar button.close:active {
+  background-color: var(--secondary);
+}
+.title-bar button.close:active::before, .title-bar button.close:active::after {
+  background: var(--primary);
+}
+.title-bar button.resize {
+  background: linear-gradient(var(--secondary) 0%, var(--secondary) 100%) 60% 40%,
+              linear-gradient(to bottom, var(--secondary) 0%, var(--secondary) 100%) 40% 60%;
+  background-size: 50% 2px, 2px 50%;
+  background-repeat: no-repeat;
+  background-color: var(--primary);
+}
+.title-bar button.resize:active {
+  background-color: var(--secondary);
+  background: linear-gradient(var(--primary) 0%, var(--primary) 100%) 60% 40%,
+              linear-gradient(to bottom, var(--primary) 0%, var(--primary) 100%) 40% 60%;
+  background-size: 50% 2px, 2px 50%;
+  background-repeat: no-repeat;
+}
+.title-bar button.resize:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.title-bar button.close:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Separator */
+.separator {
+  flex: none;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  border-top: 0.1rem solid var(--secondary);
+  border-width: 0.1rem 0;
+}
+
+/* Window Pane */
+.window-pane {
+  overflow-y: auto;
+  padding: 1rem 2rem;
+  font-size: 18px;
+  letter-spacing: -0.025em;
+  flex: 1;
+}
+
+/* Message Area */
+.message-area {
+  height: 300px;
+  overflow-y: auto;
+  font-family: Monaco, monospace;
+  white-space: pre-wrap;
+  line-height: 1.2;
+  flex: 1;
+}
+
+/* Buttons */
+.btn, .btn-default {
+  min-height: 20px;
+  min-width: 59px;
+  padding: 0 20px;
+  background: var(--primary);
+  border-style: solid;
+  border-width: 5.5px;
+  border-image: url("icon/button.svg") 30 stretch;
+  color: var(--secondary);
+  text-align: center;
+  text-decoration: none;
+  font-size: 18px;
+  font-family: Chicago_12;
+  cursor: pointer;
+}
+.btn:active {
+  background: var(--secondary);
+  border-radius: 6px;
+  color: var(--primary);
+}
+.btn:disabled {
+  color: var(--disabled);
+}
+.btn-default {
+  border-image: url("icon/button-default.svg") 60 stretch;
+  border-width: 0.5em;
+}
+.btn-default:active {
+  border-radius: 12px;
+}
+
+/* Input */
+input[type="text"] {
+  border: 1.5px solid var(--secondary);
+  font-family: Chicago_12;
+  font-size: 18px;
+  padding-left: 5px;
+  width: 100%;
+  box-sizing: border-box;
+}
+input[type="text"]:focus-visible {
+  background: var(--secondary);
+  color: var(--primary);
+  outline: none;
+}
+
+/* Menu Bar */
+ul[role="menu-bar"] {
+  display: flex;
+  background: var(--primary);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  cursor: pointer;
+  font-family: Chicago_12;
+  font-size: 1em;
+  border-bottom: 0.1rem solid var(--secondary);
+}
+ul[role="menu-bar"] > [role="menu-item"] {
+  position: relative;
+  padding: 6px 10px;
+}
+ul[role="menu-bar"] > [role="menu-item"]:hover,
+ul[role="menu-bar"] > [role="menu-item"]:focus {
+  background: var(--secondary);
+  color: var(--primary);
+  outline: none;
+}
+ul[role="menu"] {
+  display: none;
+  position: absolute;
+  min-width: 200px;
+  background: var(--primary);
+  color: var(--secondary);
+  border: 1px solid var(--secondary);
+  box-shadow: var(--box-shadow);
+  padding: 0;
+  margin: 0;
+  z-index: 100;
+  list-style: none;
+}
+ul[role="menu"]::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  left: 28px;
+  width: 2px;
+  box-shadow: inset 1px 0 rgba(0, 0, 0, 0.15), inset -1px 0 var(--primary);
+}
+ul[role="menu"] > [role="menu-item"] > a {
+  all: unset;
+  position: relative;
+  padding: 5px 20px;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+ul[role="menu"] > [role="menu-item"] > a:hover,
+ul[role="menu"] > [role="menu-item"] > a:focus {
+  background: var(--secondary);
+  color: var(--primary) !important;
+}
+ul[role="menu-item"].divider::after {
+  content: "";
+  pointer-events: none;
+  display: block;
+  padding: 0;
+  border-top: 1.5px dotted var(--secondary);
+}
+
+/* Field Row */
+.field-row {
+  display: flex;
+  align-items: center;
+  font-family: Chicago_12;
+  font-size: 1em;
+}
+.field-row > * + * {
+  margin-left: var(--grouped-element-spacing);
+}
+.field-row.stacked {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+/* BBS-Specific Styles */
+#modem-sequence .window-pane {
+  color: #00FF00;
+  font-family: Monaco, monospace;
+  white-space: pre-wrap;
+  height: 200px;
+  text-align: center;
+  font-size:24px;
+}
+.message-area {
+  height: 300px;
+  overflow-y: auto;
+  font-family: Monaco, monospace;
+  white-space: pre-wrap;
+  line-height: 1.2;
+  flex: 1;
+}
+.banner-container {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0;
+  font-family: Monaco, monospace;
+  white-space: pre;
+  overflow-x: auto;
+  font-size: 12px;
+}
+.welcome-box {
+  text-align: center;
+  margin: 20px auto;
+}
+.welcome-box-inner {
+  display: inline-block;
+  padding: 10px;
+  background: var(--primary);
+  border: 2px solid var(--secondary);
+  font-family: Monaco, monospace;
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+/* Chat Input Section */
+.chat-input-section {
+  padding: 0.5rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 600px) {
+  .banner-container {
+    font-size: 10px;
+  }
+  .window, .modal-dialog, .boot-dialog {
+    margin: 0.5rem;
+    min-width: 280px;
+    max-width: 100%;
+  }
+  .desktop-icon {
+    width: 48px;
+    font-size: 10px;
+  }
+  .desktop-icon img {
+    width: 24px;
+    height: 24px;
+  }
+  .boot-icon {
+    width: 48px;
+    height: 48px;
+  }
+  .boot-icon-label {
+    font-size: 10px;
+  }
+  .boot-icon-label .question-mark {
+    font-size: 20px;
+  }
+  .boot-text, #progressBar, #modem-sequence .window-pane {
+    font-size: 18px;
+  }
+  .progress-section {
+    font-size: 12px;
+  }
+}
+
+/* CRT Flicker Animation */
+@keyframes crt-flicker {
+  0% { opacity: 0.9; }
+  100% { opacity: 1; }
+}
+.message-area, .boot-text, .progress-section {
+  animation: crt-flicker 0.1s infinite alternate;
+}
+
+/* ===== Force visible scrollbar arrows for every window-pane ===== */
+.window-pane::-webkit-scrollbar-button {
+  display:block !important;
+}
+.window-pane::-webkit-scrollbar-button:vertical:decrement {
+  height:14px; width:14px;
+  background:url("core/icon/scrollbar-up.svg") no-repeat center !important;
+}
+.window-pane::-webkit-scrollbar-button:vertical:increment {
+  height:14px; width:14px;
+  background:url("core/icon/scrollbar-down.svg") no-repeat center !important;
+}
+.window-pane::-webkit-scrollbar-button:horizontal:decrement {
+  height:14px; width:14px;
+  background:url("core/icon/scrollbar-left.svg") no-repeat center !important;
+}
+.window-pane::-webkit-scrollbar-button:horizontal:increment {
+  height:14px; width:14px;
+  background:url("core/icon/scrollbar-right.svg") no-repeat center !important;
+}
+

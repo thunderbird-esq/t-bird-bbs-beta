@@ -15,4 +15,7 @@ bbs_messages.json
 
 # OS generated files
 .DS_Store
-Thumbs.db
+Thumbs.d
+
+# any swap files whatsoever
+*.swp
