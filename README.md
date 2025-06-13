@@ -53,3 +53,4 @@ Once connected (either via web or Telnet):
 *   `SAY <message>`: Posts a new message (requires login).
 *   `WHO`: Shows a list of currently logged-in users.
 *   `QUIT`: Disconnects your Telnet session. (Web users can just close the tab).
+<!-- Jules: Forcing a refresh of the repo view -->

@@ -11,17 +11,32 @@ const postcss = require("postcss");
 const { homepage, version } = require("./package.json");
 
 function buildCSS() {
+  const sourceCssPath = "core/styles.css"; // Updated path
   const input =
-    `/*! system.css v${version} - ${homepage} */\n` + fs.readFileSync("style.css");
+    `/*! system.css v${version} - ${homepage} */\n` + fs.readFileSync(sourceCssPath);
 
   return postcss()
-    .use(require("postcss-inline-svg"))
+    .use(require("postcss-inline-svg")({
+      paths: ["core"], // Added to help resolve svgs if they are relative to core/
+    }))
     .use(require("postcss-css-variables"))
     .use(require("postcss-calc"))
-    .use(require("postcss-copy")({ dest: "dist", template: "[name].[ext]" }))
+    // For postcss-copy, assets are resolved relative to the `from` CSS file's directory.
+    // If core/styles.css has url('./fonts/font.woff2'), it looks for core/fonts/font.woff2
+    // and copies to dist/fonts/font.woff2 if `template` preserves paths, or dist/font.woff2 if not.
+    // The current template: "[name].[ext]" will put assets directly in "dist", not "dist/fonts".
+    // This needs to be `template: "assets/[name].[ext]"` or similar if we want them in subdirs,
+    // or paths in CSS need to be `url("fonts/font.woff2")` for `template: "[path][name].[ext]"`.
+    // Given the original structure likely copied fonts/icons into dist/fonts and dist/icon,
+    // we'll adjust the template for `postcss-copy` to include the path.
+    .use(require("postcss-copy")({
+      dest: "dist",
+      template: "[path][name].[ext]", // Preserves path like 'fonts/font.woff2'
+      resolveFrom: "core", // Base for resolving asset paths from CSS
+    }))
     .use(require("cssnano"))
     .process(input, {
-      from: "style.css",
+      from: sourceCssPath, // Important: `from` should be the actual path of the source CSS file
       to: "dist/system.css",
       map: { inline: false },
     })
@@ -96,19 +111,29 @@ function buildBbsClientAssets() {
   // This is a re-implementation of buildCSS's core for a different output.
   // A better long-term solution would be to refactor buildCSS to accept output paths.
   console.log("Building BBS client CSS...");
-  const input =
-    `/*! system.css v${version} - ${homepage} - BBS Client */\n` + fs.readFileSync("style.css");
+  const sourceCssPathBbs = "core/styles.css"; // Updated path
+  const inputBbs =
+    `/*! system.css v${version} - ${homepage} - BBS Client */\n` + fs.readFileSync(sourceCssPathBbs);
 
   return postcss()
-    .use(require("postcss-inline-svg"))
+    .use(require("postcss-inline-svg")({
+        paths: ["core"], // Added to help resolve svgs if they are relative to core/
+    }))
     .use(require("postcss-css-variables"))
     .use(require("postcss-calc"))
-    // Critical: ensure postcss-copy copies assets relative to the NEW output path
-    .use(require("postcss-copy")({ dest: styleDir, template: "[name].[ext]" }))
+    // For assets referenced in core/styles.css (e.g., url('./fonts/font.woff2')),
+    // postcss-copy will look for core/fonts/font.woff2.
+    // It will copy them to `styleDir` (dist_bbs_client/style/) + the path from the template.
+    // e.g. dist_bbs_client/style/fonts/font.woff2
+    .use(require("postcss-copy")({
+      dest: styleDir, // Output base for assets (e.g., dist_bbs_client/style)
+      template: "[path][name].[ext]", // Preserves path structure relative to CSS file (e.g., fonts/file.woff2)
+      resolveFrom: "core", // Base for resolving asset paths from CSS
+    }))
     .use(require("cssnano"))
-    .process(input, {
-      from: "style.css", // Original source
-      to: path.join(styleDir, "system.css"), // New destination
+    .process(inputBbs, { // Use inputBbs here
+      from: sourceCssPathBbs, // `from` should be the actual path of the source CSS file
+      to: path.join(styleDir, "system.css"),
       map: { inline: false },
     })
     .then((result) => {
@@ -118,7 +143,8 @@ function buildBbsClientAssets() {
 
       // Copy HTML
       console.log("Copying BBS client HTML...");
-      fs.copyFileSync("index.html", path.join(outputDir, "index.html"));
+      // index.html is now assumed to be in core/
+      fs.copyFileSync("core/index.html", path.join(outputDir, "index.html"));
       console.log("BBS client HTML copied.");
 
       // Verify/copy fonts and icons if not handled by postcss-copy
