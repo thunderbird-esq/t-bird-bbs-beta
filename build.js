@@ -143,8 +143,8 @@ function buildBbsClientAssets() {
 
       // Copy HTML
       console.log("Copying BBS client HTML...");
-      // index.html is now assumed to be in core/
-      fs.copyFileSync("core/index.html", path.join(outputDir, "index.html"));
+      // index.html is in the root directory
+      fs.copyFileSync("index.html", path.join(outputDir, "index.html"));
       console.log("BBS client HTML copied.");
 
       // Verify/copy fonts and icons if not handled by postcss-copy

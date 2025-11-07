@@ -1,30 +1,34 @@
 {
-  "name": "@sakun/system.css",
-  "version": "0.1.11",
-  "description": "A design system for building retro Apple interfaces",
-  "main": "dist/system.css",
+  "name": "thunderbird-bbs",
+  "version": "0.1.0",
+  "description": "A retro-themed Bulletin Board System (BBS) accessible via web browser and Telnet clients",
+  "main": "server.js",
   "directories": {
     "doc": "docs"
   },
   "scripts": {
+    "start": "node server.js",
     "build": "node build.js",
     "deploy": "npm run build && gh-pages -d dist",
     "release": "npm run build && npm publish"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sakofchit/system.css.git"
+    "url": "git+https://github.com/thunderbird-esq/t-bird-bbs-beta.git"
   },
   "keywords": [
-    "css",
+    "bbs",
+    "bulletin-board-system",
+    "telnet",
+    "retro",
     "classic macos"
   ],
-  "author": "Sakun Acharige <hey@sakun.co>",
+  "author": "thunderbird-esq",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/sakofchit/system.css/issues"
+    "url": "https://github.com/thunderbird-esq/t-bird-bbs-beta/issues"
   },
-  "homepage": "https://github.com/sakofchit/system.css",
+  "homepage": "https://github.com/thunderbird-esq/t-bird-bbs-beta",
   "devDependencies": {
     "chokidar": "^3.3.1",
     "cssnano": "^5.0.1",
