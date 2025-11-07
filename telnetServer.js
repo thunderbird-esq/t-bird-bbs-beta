@@ -132,8 +132,9 @@ function startTelnetServer() {
     });
   });
 
-  server.listen(TELNET_PORT, () => {
+  server.listen(TELNET_PORT, '0.0.0.0', () => {
     console.log(`BBS Telnet server listening on port ${TELNET_PORT}`);
+    console.log(`Telnet accessible at: telnet 0.0.0.0 ${TELNET_PORT} (use your IP address)`);
   }).on('error', (err) => {
     console.error(`Telnet server error: ${err.message}`);
     if (err.code === 'EADDRINUSE') {

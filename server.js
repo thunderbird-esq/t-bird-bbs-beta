@@ -109,19 +109,24 @@ app.post('/api/command', async (req, res) => {
  * Starts all the servers: Express API, live-server for static files, and Telnet server.
  */
 function startServers() {
-  app.listen(EXPRESS_PORT, () => {
+  // Bind to 0.0.0.0 to allow network access
+  app.listen(EXPRESS_PORT, '0.0.0.0', () => {
     console.log(`BBS Express API server listening on port ${EXPRESS_PORT}`);
+    console.log(`API accessible at: http://0.0.0.0:${EXPRESS_PORT}/api/command`);
   });
 
   liveServer.start({
     port: process.env.WEB_PORT || 3000,
+    host: "0.0.0.0", // Allow network access
     root: "./",
     file: "index.html",
     open: false,
     wait: 500,
     logLevel: 2
   });
-  console.log(`BBS Web client served on http://localhost:${process.env.WEB_PORT || 3000}`);
+  const webPort = process.env.WEB_PORT || 3000;
+  console.log(`BBS Web client served on http://localhost:${webPort}`);
+  console.log(`Network access: http://0.0.0.0:${webPort} (use your IP address)`);
 
   startTelnetServer();
 }
